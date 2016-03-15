@@ -2,8 +2,10 @@ package angelcotes.manejo_imagenes;
 
 import android.animation.AnimatorSet;
 import android.app.AlertDialog;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.Image;
@@ -83,10 +85,16 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int eleccion) {
                         if (image != null) {
-                            if (options[eleccion] == "Grayscale") {
-                                Bitmap newBitmap = BitmapFilter.changeStyle(image, BitmapFilter.MOTION_BLUR_STYLE);
-                                imageView.setImageBitmap(newBitmap);
+                            Bitmap newBitmap = null;
+                            switch(eleccion) {
+                                case 0:
+                                    newBitmap = BitmapFilter.changeStyle(image, BitmapFilter.GRAY_STYLE);
+                                    break;
+                                case 1:
+                                    newBitmap = BitmapFilter.changeStyle(image, BitmapFilter.RELIEF_STYLE);
+                                    break;
                             }
+                            imageView.setImageBitmap(newBitmap);
                         } else {
                             //mensaje de error por estar vacio el imageView
                         }
@@ -105,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
             case PHOTO_CODE:
                 if (resultCode == RESULT_OK){
                     String dir = Environment.getExternalStorageDirectory() + File.separator + MEDIA_DIRECTORY + File.separator + NOMBRE_TEMPORAL_IMAGEN;
-
                     Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                     File f = new File(dir);
                     Uri contentUri = Uri.fromFile(f);
@@ -118,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
                 if (resultCode == RESULT_OK){
                     Uri path = data.getData();
                     imageView.setImageURI(path);
+                    decodeBitmap(getRealPathFromURI(path));
                 }
                 break;
         }
@@ -131,8 +139,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openCamera() {
-
-
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "Img" + timeStamp;
 
@@ -157,5 +163,16 @@ public class MainActivity extends AppCompatActivity {
         Bitmap newBitmap = Bitmap.createScaledBitmap(realImage, width,
                 height, filter);
         return newBitmap;
+    }
+
+    private String getRealPathFromURI(Uri contentUri) {
+        String[] proj = { MediaStore.Images.Media.DATA };
+        CursorLoader loader = new CursorLoader(this, contentUri, proj, null, null, null);
+        Cursor cursor = loader.loadInBackground();
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        String result = cursor.getString(column_index);
+        cursor.close();
+        return result;
     }
 }
