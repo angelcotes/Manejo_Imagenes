@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -21,6 +22,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import angelcotes.Libreria_Estilos.BitmapFilter;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -30,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final int PHOTO_CODE = 100;
     private final int SELECT_PICTURE = 200;
+
+    private Bitmap image;
 
     private ImageView imageView;
 
@@ -66,6 +71,30 @@ public class MainActivity extends AppCompatActivity {
                 builder.show();
             }
         });
+        imageView.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                final CharSequence[] options = {"Grayscale" , "Relief", "Oil Painting", "Neon", "Pixelate", "Old TV", "Invert Color", "Block", "Old Photo", "Sharpen", "Light"};
+                final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                builder.setTitle("Estilos");
+                builder.setItems(options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int eleccion) {
+                        if (image != null) {
+                            if (options[eleccion] == "Grayscale") {
+                                Bitmap newBitmap = BitmapFilter.changeStyle(image, BitmapFilter.MOTION_BLUR_STYLE);
+                                imageView.setImageBitmap(newBitmap);
+                            }
+                        } else {
+                            //mensaje de error por estar vacio el imageView
+                        }
+                    }
+                });
+                builder.show();
+            }
+        });
     }
 
     @Override
@@ -76,12 +105,13 @@ public class MainActivity extends AppCompatActivity {
             case PHOTO_CODE:
                 if (resultCode == RESULT_OK){
                     String dir = Environment.getExternalStorageDirectory() + File.separator + MEDIA_DIRECTORY + File.separator + NOMBRE_TEMPORAL_IMAGEN;
-                    decodeBitmap(dir);
+
                     Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                     File f = new File(dir);
                     Uri contentUri = Uri.fromFile(f);
                     mediaScanIntent.setData(contentUri);
                     this.sendBroadcast(mediaScanIntent);
+                    decodeBitmap(dir);
                 }
                 break;
             case SELECT_PICTURE:
@@ -96,8 +126,8 @@ public class MainActivity extends AppCompatActivity {
     private void decodeBitmap(String dir) {
         Bitmap bitmap;
         bitmap = BitmapFactory.decodeFile(dir);
-
         imageView.setImageBitmap(bitmap);
+        image = bitmap;
     }
 
     private void openCamera() {
@@ -115,5 +145,17 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(newFile));
         startActivityForResult(intent, PHOTO_CODE);
+    }
+
+    public static Bitmap scaleDown(Bitmap realImage, float maxImageSize, boolean filter) {
+        float ratio = Math.min(
+                (float) maxImageSize / realImage.getWidth(),
+                (float) maxImageSize / realImage.getHeight());
+        int width = Math.round((float) ratio * realImage.getWidth());
+        int height = Math.round((float) ratio * realImage.getHeight());
+
+        Bitmap newBitmap = Bitmap.createScaledBitmap(realImage, width,
+                height, filter);
+        return newBitmap;
     }
 }
