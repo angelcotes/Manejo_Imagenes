@@ -1,6 +1,7 @@
 package angelcotes.manejo_imagenes;
 
 import android.animation.AnimatorSet;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
@@ -10,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +19,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.graphics.Matrix;
 import android.widget.ImageView;
 
 import java.io.File;
@@ -77,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                final CharSequence[] options = {"Grayscale" , "Relief", "Oil Painting", "Neon", "Pixelate", "Old TV", "Invert Color", "Block", "Old Photo", "Sharpen", "Light"};
+                final CharSequence[] options = {"Grayscale", "Old Photo", "Invert Color", "Recortar Imagen" , "Girar Imagen 90°"};
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
                 builder.setTitle("Estilos");
@@ -91,12 +95,26 @@ public class MainActivity extends AppCompatActivity {
                                     newBitmap = BitmapFilter.changeStyle(image, BitmapFilter.GRAY_STYLE);
                                     break;
                                 case 1:
-                                    newBitmap = BitmapFilter.changeStyle(image, BitmapFilter.RELIEF_STYLE);
+                                    newBitmap = BitmapFilter.changeStyle(image, BitmapFilter.OLD_STYLE);
+                                    break;
+                                case 2:
+                                    newBitmap = BitmapFilter.changeStyle(image, BitmapFilter.INVERT_STYLE);
+                                    break;
+                                case 3:
+                                    int bitmapWidth = image.getWidth() / 2;
+                                    int bitmapHeight = image.getHeight() / 2;
+                                    newBitmap = Bitmap.createBitmap(image,0,0, bitmapWidth + bitmapWidth / 2, bitmapHeight + bitmapHeight / 2);
+                                    image = newBitmap;
+                                    break;
+                                case 4:
+                                    Matrix matrix = new Matrix();
+                                    matrix.postRotate(90);
+
+                                    newBitmap = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), matrix, true);
+                                    image = newBitmap;
                                     break;
                             }
                             imageView.setImageBitmap(newBitmap);
-                        } else {
-                            //mensaje de error por estar vacio el imageView
                         }
                     }
                 });
@@ -152,19 +170,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(newFile));
         startActivityForResult(intent, PHOTO_CODE);
     }
-
-    public static Bitmap scaleDown(Bitmap realImage, float maxImageSize, boolean filter) {
-        float ratio = Math.min(
-                (float) maxImageSize / realImage.getWidth(),
-                (float) maxImageSize / realImage.getHeight());
-        int width = Math.round((float) ratio * realImage.getWidth());
-        int height = Math.round((float) ratio * realImage.getHeight());
-
-        Bitmap newBitmap = Bitmap.createScaledBitmap(realImage, width,
-                height, filter);
-        return newBitmap;
-    }
-
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private String getRealPathFromURI(Uri contentUri) {
         String[] proj = { MediaStore.Images.Media.DATA };
         CursorLoader loader = new CursorLoader(this, contentUri, proj, null, null, null);

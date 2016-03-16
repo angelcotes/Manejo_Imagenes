@@ -5,11 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 
 public class BlockFilter {
-	
-	static {
-		System.loadLibrary("AndroidImageFilter");
-	}
-	
+
 	public static Bitmap changeToBrick(Bitmap bitmap) {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
