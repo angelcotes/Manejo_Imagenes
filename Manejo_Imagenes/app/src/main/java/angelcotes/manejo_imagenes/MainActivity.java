@@ -109,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
                                 case 4:
                                     Matrix matrix = new Matrix();
                                     matrix.postRotate(90);
-
                                     newBitmap = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), matrix, true);
                                     image = newBitmap;
                                     break;
