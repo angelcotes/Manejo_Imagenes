@@ -16,12 +16,17 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Layout;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Gallery;
 import android.widget.ImageView;
 import android.graphics.Matrix;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,9 +45,16 @@ public class MainActivity extends AppCompatActivity {
     private final int PHOTO_CODE = 100;
     private final int SELECT_PICTURE = 200;
 
+//------- Gallery code
+    LinearLayout linLay;
+    ImageView imageLayout;
+
+    ImageView img;
+
     private Bitmap image;
 
     private ImageView imageView;
+    private ImageView imageToLinear;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         imageView = (ImageView) findViewById(R.id.img_ver);
         Button btn = (Button) findViewById(R.id.btn_opciones);
+        linLay = (LinearLayout) findViewById(R.id.Linear1);
 
         btn.setOnClickListener(new View.OnClickListener() {
 
@@ -81,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                final CharSequence[] options = {"Grayscale", "Old Photo", "Invert Color", "Recortar Imagen" , "Girar Imagen 90°"};
+                final CharSequence[] options = {"Grayscale", "Old Photo", "Invert Color", "Recortar Imagen" , "Girar Imagen 90°", "Añadir Imagen"};
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
                 builder.setTitle("Estilos");
@@ -111,6 +124,13 @@ public class MainActivity extends AppCompatActivity {
                                     matrix.postRotate(90);
                                     newBitmap = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), matrix, true);
                                     image = newBitmap;
+                                    break;
+                                case 5:
+                                    Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                    intent.setType("image/*");
+                                    Uri path = intent.getData();
+                                    imageLayout.setImageURI(path);
+                                    linLay.addView(imageLayout);
                                     break;
                             }
                             imageView.setImageBitmap(newBitmap);
@@ -143,6 +163,10 @@ public class MainActivity extends AppCompatActivity {
                     Uri path = data.getData();
                     imageView.setImageURI(path);
                     decodeBitmap(getRealPathFromURI(path));
+                    imageToLinear = new ImageView(this);
+                    imageToLinear.setImageBitmap(image);
+                    imageToLinear.setVisibility(ImageView.VISIBLE);
+                    linLay.addView(imageToLinear);
                 }
                 break;
         }
@@ -151,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
     private void decodeBitmap(String dir) {
         Bitmap bitmap;
         bitmap = BitmapFactory.decodeFile(dir);
+
         imageView.setImageBitmap(bitmap);
         image = bitmap;
     }
@@ -164,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
         NOMBRE_TEMPORAL_IMAGEN = imageFileName + ".jpg";
         String path = Environment.getExternalStorageDirectory() + File.separator + MEDIA_DIRECTORY + File.separator + NOMBRE_TEMPORAL_IMAGEN;
         File newFile = new File(path);
-        Log.d("tag", path);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(newFile));
         startActivityForResult(intent, PHOTO_CODE);
