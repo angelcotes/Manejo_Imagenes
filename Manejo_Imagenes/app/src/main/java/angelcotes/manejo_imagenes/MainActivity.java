@@ -20,6 +20,7 @@ import android.text.Layout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Gallery;
 import android.widget.ImageView;
@@ -164,6 +165,9 @@ public class MainActivity extends AppCompatActivity {
                     imageView.setImageURI(path);
                     decodeBitmap(getRealPathFromURI(path));
                     imageToLinear = new ImageView(this);
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(120, LinearLayout.LayoutParams.MATCH_PARENT);
+                    params.rightMargin = 2;
+                    imageToLinear.setLayoutParams(params);
                     imageToLinear.setImageBitmap(image);
                     imageToLinear.setVisibility(ImageView.VISIBLE);
                     linLay.addView(imageToLinear);
