@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -29,6 +30,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -169,6 +172,15 @@ public class MainActivity extends AppCompatActivity {
         params.topMargin = 2;
         imageToLinear.setLayoutParams(params);
         imageToLinear.setImageBitmap(image);
+        imageToLinear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BitmapDrawable bitmapDrawable = ((BitmapDrawable) ((ImageView)v).getDrawable());
+                Bitmap bitmap = bitmapDrawable.getBitmap();
+                image = bitmap;
+                imageView.setImageBitmap(image);
+            }
+        });
         imageToLinear.setVisibility(ImageView.VISIBLE);
         linLay.addView(imageToLinear);
     }
