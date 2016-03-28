@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView img;
 
     private Bitmap image;
-
+    private Bitmap ArrayBitmap[];
     private ImageView imageView;
     private ImageView imageToLinear;
 
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                         if (options[eleccion] == "Tomar Foto") {
                             openCamera();
                         } else if (options[eleccion] == "Buscar en Galeria") {
-                            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                             intent.setType("image/*");
                             startActivityForResult(intent.createChooser(intent, "Seleccionar imagen"), SELECT_PICTURE);
                         } else {
@@ -91,11 +91,11 @@ public class MainActivity extends AppCompatActivity {
                 builder.show();
             }
         });
-        imageView.setOnClickListener(new View.OnClickListener(){
+        imageView.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                final CharSequence[] options = {"Grayscale", "Old Photo", "Invert Color", "Recortar Imagen" , "Girar Imagen 90°", "Añadir Imagen"};
+                final CharSequence[] options = {"Grayscale", "Old Photo", "Invert Color", "Recortar Imagen", "Girar Imagen 90°", "Cancelar"};
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
                 builder.setTitle("Estilos");
@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int eleccion) {
                         if (image != null) {
                             Bitmap newBitmap = null;
-                            switch(eleccion) {
+                            switch (eleccion) {
                                 case 0:
                                     newBitmap = BitmapFilter.changeStyle(image, BitmapFilter.GRAY_STYLE);
                                     break;
@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                                 case 3:
                                     int bitmapWidth = image.getWidth() / 2;
                                     int bitmapHeight = image.getHeight() / 2;
-                                    newBitmap = Bitmap.createBitmap(image,0,0, bitmapWidth + bitmapWidth / 2, bitmapHeight + bitmapHeight / 2);
+                                    newBitmap = Bitmap.createBitmap(image, 0, 0, bitmapWidth + bitmapWidth / 2, bitmapHeight + bitmapHeight / 2);
                                     image = newBitmap;
                                     break;
                                 case 4:
@@ -125,13 +125,6 @@ public class MainActivity extends AppCompatActivity {
                                     matrix.postRotate(90);
                                     newBitmap = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), matrix, true);
                                     image = newBitmap;
-                                    break;
-                                case 5:
-                                    Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                                    intent.setType("image/*");
-                                    Uri path = intent.getData();
-                                    imageLayout.setImageURI(path);
-                                    linLay.addView(imageLayout);
                                     break;
                             }
                             imageView.setImageBitmap(newBitmap);
@@ -157,25 +150,28 @@ public class MainActivity extends AppCompatActivity {
                     mediaScanIntent.setData(contentUri);
                     this.sendBroadcast(mediaScanIntent);
                     decodeBitmap(dir);
+                    GetImageLinear();
                 }
                 break;
             case SELECT_PICTURE:
                 if (resultCode == RESULT_OK){
                     Uri path = data.getData();
-                    imageView.setImageURI(path);
                     decodeBitmap(getRealPathFromURI(path));
-                    imageToLinear = new ImageView(this);
-                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(120, LinearLayout.LayoutParams.MATCH_PARENT);
-                    params.rightMargin = 2;
-                    imageToLinear.setLayoutParams(params);
-                    imageToLinear.setImageBitmap(image);
-                    imageToLinear.setVisibility(ImageView.VISIBLE);
-                    linLay.addView(imageToLinear);
+                    GetImageLinear();
                 }
                 break;
         }
     }
-
+    private void GetImageLinear(){
+        imageToLinear = new ImageView(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(100, 100);
+        params.rightMargin = 2;
+        params.topMargin = 2;
+        imageToLinear.setLayoutParams(params);
+        imageToLinear.setImageBitmap(image);
+        imageToLinear.setVisibility(ImageView.VISIBLE);
+        linLay.addView(imageToLinear);
+    }
     private void decodeBitmap(String dir) {
         Bitmap bitmap;
         bitmap = BitmapFactory.decodeFile(dir);
